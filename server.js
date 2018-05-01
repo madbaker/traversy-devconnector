@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const passport = require("passport");
 
 //Bring in Routes
 
@@ -16,6 +17,14 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+//Passport Middleware
+
+app.use(passport.initialize());
+
+//Passport Config
+
+require("./config/passport")(passport);
 
 //DB Config
 
