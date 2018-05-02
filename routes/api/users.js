@@ -9,6 +9,7 @@ const passport = require("passport");
 //Load input validation
 
 const validateRegisterInput = require("../../validation/register");
+const validateLoginInput = require("../../validation/login");
 
 //Load the User Model
 
@@ -26,10 +27,10 @@ router.post("/register", (req, res) => {
   const { errors, isValid } = validateRegisterInput(req.body);
 
   //check validation
-
   if (!isValid) {
     return res.status(400).json(errors);
   }
+
   User.findOne({ email: req.body.email }).then(user => {
     if (user) {
       errors.email = "Email already exists";
@@ -66,6 +67,13 @@ router.post("/register", (req, res) => {
 // @access  Public
 
 router.post("/login", (req, res) => {
+  const { errors, isValid } = validateLoginInput(req.body);
+
+  //check validation
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
   const email = req.body.email;
   const password = req.body.password;
 
@@ -74,7 +82,8 @@ router.post("/login", (req, res) => {
   User.findOne({ email }).then(user => {
     // is user in DB
     if (!user) {
-      return res.status(404).json({ email: "User not found" });
+      errors.email = "User not found";
+      return res.status(404).json(errors);
     }
 
     //does PW match
@@ -98,7 +107,8 @@ router.post("/login", (req, res) => {
           }
         );
       } else {
-        return res.status(400).json({ password: "Password is incorrect" });
+        errors.password = "Password is incorrect";
+        return res.status(400).json(errors);
       }
     });
   });
