@@ -180,6 +180,7 @@ router.post(
     if (!isValid) {
       return res.status(400).json(errors);
     }
+
     Profile.findOne({ user: req.user.id })
       .then(profile => {
         const newExp = {
@@ -243,6 +244,76 @@ router.post(
           .catch(err => res.json(err));
       })
       .catch(err => res.json(err));
+  }
+);
+
+// @route   DELETE api/profile/experience/:exp_id
+// @desc    Delete an experience item
+// @access  Private
+
+router.delete(
+  "/experience/:exp_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id })
+      .then(profile => {
+        //Find array index of the element we want to remove.
+        const removeIndex = profile.experience
+          .map(item => item.id)
+          .indexOf(req.params.exp_id);
+        if (removeIndex < 0) {
+          const error = "Experience record not found";
+          return res.status(404).json(error);
+        }
+        //remove from array
+        profile.experience.splice(removeIndex, 1);
+
+        profile.save().then(profile => res.json(profile));
+      })
+      .catch(err => res.status(404).json(err));
+  }
+);
+
+// @route   DELETE api/profile/education/:edu_id
+// @desc    Delete an education item
+// @access  Private
+
+router.delete(
+  "/education/:edu_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id })
+      .then(profile => {
+        //Find array index of the element we want to remove.
+        const removeIndex = profile.education
+          .map(item => item.id)
+          .indexOf(req.params.edu_id);
+        if (removeIndex < 0) {
+          const error = "Education record not found";
+          return res.status(404).json(error);
+        }
+        //remove from array
+        profile.education.splice(removeIndex, 1);
+
+        profile.save().then(profile => res.json(profile));
+      })
+      .catch(err => res.status(404).json(err));
+  }
+);
+
+// @route   DELETE api/profile
+// @desc    Delete profile AND user
+// @access  Private
+
+router.delete(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOneAndRemove({ user: req.user.id }).then(() => {
+      User.findOneAndRemove({ _id: req.user.id }).then(() =>
+        res.json({ success: true })
+      );
+    });
   }
 );
 module.exports = router;
